@@ -45,4 +45,32 @@ describe("Test routes", () => {
         done();
       });
   });
+  describe("GET /bookmarks/:id", () => {
+    const testBookmark = { url: "https://nodejs.org/", title: "Node.js" };
+    beforeEach((done) =>
+      connection.query("TRUNCATE bookmark", () =>
+        connection.query("INSERT INTO bookmark SET ?", testBookmark, done)
+      )
+    );
+    it("GET /bookmarks/:id - ERROR!", (done) => {
+      request(app)
+        .get("/bookmarks/42")
+        .expect(404)
+        .then((response) => {
+          const expected = { error: "Bookmark not found" };
+          done();
+        });
+    });
+    it("GET /bookmarks/:id - SUCESS!", (done) => {
+      request(app)
+        .get("/bookmarks/1")
+        .expect(200)
+        .expect("Content-Type", /json/)
+        .then((response) => {
+          const expected = { ...testBookmark, id: 1 };
+          expect(response.body).toEqual(expected);
+          done();
+        });
+    });
+  });
 });
